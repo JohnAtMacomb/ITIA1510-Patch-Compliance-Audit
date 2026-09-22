@@ -8,16 +8,17 @@ Run it from the folder that holds patch_audit.py:
 
     python -m unittest test_patch_audit -v
 
-Run it before you change anything: 30 of the 44 tests fail. The other 14 pass
-by accident, because a placeholder happens to return the right answer for that
-one case, so a green test is only worth something once you have written the
-function. Work through the TODOs and the rest turn green a few at a time.
+Run it before you change anything: 24 of the 34 tests fail.
+The rest pass by accident, because a placeholder happens to return the right
+answer for that one case, so a green test is only worth something once you
+have written the function. Work through the TODOs and the rest turn green a
+few at a time.
 
 Every test has a comment above it saying what it checks. When one fails, read
 that comment first: it names the rule the function broke.
 
-The report TODOs, 13 through 20, are not tested here. Check those against the
-table in the assignment.
+The report TODOs, 10 through 15, are not tested here. Check those against
+the table in the assignment.
 """
 
 import unittest
@@ -133,50 +134,8 @@ class TestDaysOverdue(unittest.TestCase):
         self.assertEqual(pa.days_overdue(60, 1), 0)
 
 
-class TestOverdueBar(unittest.TestCase):
-    """TODO 5: overdue_bar draws the overdue column, one # per 10 days."""
-
-    # Nothing overdue prints nothing at all, not a single mark.
-    def test_not_overdue_is_empty(self):
-        self.assertEqual(pa.overdue_bar(0), "")
-
-    # Being overdue at all has to show, so 1 day still earns a mark.
-    def test_one_day_still_gets_one_mark(self):
-        self.assertEqual(pa.overdue_bar(1), "#")
-
-    # 9 days is less than a full block of 10 and still shows the one mark.
-    def test_nine_days_still_gets_one_mark(self):
-        self.assertEqual(pa.overdue_bar(9), "#")
-
-    # 81 days is eight full blocks of 10.
-    def test_eighty_one_days(self):
-        self.assertEqual(pa.overdue_bar(81), "########")
-
-    # The bar stops at 10 marks so one bad host cannot run the column off the
-    # side of the report.
-    def test_bar_never_passes_ten_marks(self):
-        self.assertEqual(pa.overdue_bar(5000), "##########")
-
-
-class TestWillLapse(unittest.TestCase):
-    """TODO 6: will_lapse looks ahead to audit day."""
-
-    # 9 days used of 14, and the audit is 10 days out: it goes over before then.
-    def test_compliant_host_that_runs_out(self):
-        self.assertTrue(pa.will_lapse(9, 3, 10))
-
-    # The same host with the audit 2 days out is still inside its limit.
-    def test_compliant_host_with_room_to_spare(self):
-        self.assertFalse(pa.will_lapse(9, 3, 2))
-
-    # A host that is already past its limit cannot lapse. It is not compliant
-    # now, so it does not belong in a forecast of what is about to break.
-    def test_host_already_past_its_limit_does_not_lapse_again(self):
-        self.assertFalse(pa.will_lapse(95, 3, 10))
-
-
 class TestBuildStatuses(unittest.TestCase):
-    """TODO 7: build_statuses runs patch_status across the three lists."""
+    """TODO 5: build_statuses runs patch_status across the three lists."""
 
     # One status per host, so the positions still line up with HOSTS.
     def test_one_status_per_host(self):
@@ -197,7 +156,7 @@ class TestBuildStatuses(unittest.TestCase):
 
 
 class TestCountStatus(unittest.TestCase):
-    """TODO 8: count_status counts one verdict across the inventory."""
+    """TODO 6: count_status counts one verdict across the inventory."""
 
     def setUp(self):
         self.statuses = pa.build_statuses(
@@ -218,7 +177,7 @@ class TestCountStatus(unittest.TestCase):
 
 
 class TestHostsWithStatus(unittest.TestCase):
-    """TODO 9: hosts_with_status names the hosts behind a count."""
+    """TODO 7: hosts_with_status names the hosts behind a count."""
 
     def setUp(self):
         self.statuses = pa.build_statuses(
@@ -241,30 +200,8 @@ class TestHostsWithStatus(unittest.TestCase):
         self.assertEqual(pa.hosts_with_status(pa.HOSTS, self.statuses, "PENDING"), [])
 
 
-class TestWorstHost(unittest.TestCase):
-    """TODO 10: worst_host finds the position of the worst offender."""
-
-    # hr-laptop-07 has the most days since its patch, but db-01 is further past
-    # its own limit. The comparison is against each host's limit, not the raw
-    # day count, and the function returns a position rather than a name.
-    def test_most_days_overdue_is_not_most_days_since_patch(self):
-        statuses = pa.build_statuses(
-            pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
-        worst = pa.worst_host(pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, statuses)
-        self.assertEqual(pa.HOSTS[worst], "db-01")
-
-    # With nothing overdue there is no worst host. Returning -1 says so;
-    # returning 0 would point at the first host and read as a real answer.
-    def test_returns_minus_one_when_nothing_is_overdue(self):
-        hosts = ["a", "b"]
-        days = [1, 2]
-        crits = [1, 1]
-        statuses = ["COMPLIANT", "COMPLIANT"]
-        self.assertEqual(pa.worst_host(hosts, days, crits, statuses), -1)
-
-
 class TestRemoveExempt(unittest.TestCase):
-    """TODO 11, the first defect: remove_exempt drops the exempt hosts."""
+    """TODO 8, the first defect: remove_exempt drops the exempt hosts."""
 
     # 13 hosts, 2 of them exempt, so 11 are audited.
     def test_both_exempt_hosts_are_removed(self):
@@ -291,7 +228,7 @@ class TestRemoveExempt(unittest.TestCase):
 
 
 class TestAverageDays(unittest.TestCase):
-    """TODO 12, the second defect: average_days averages the judged hosts."""
+    """TODO 9, the second defect: average_days averages the judged hosts."""
 
     # The average of the 11 hosts that can be judged, to one decimal place.
     def test_average_of_the_judged_hosts(self):
