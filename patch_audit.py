@@ -6,11 +6,8 @@ Topic: lists, from Week 05, and everything before them. Input and output,
 if / elif / else, while and for loops, functions that return values, and
 debugging. No dictionaries.
 
-Most breaches do not start with a clever attack. They start with a machine that
-missed a patch. Every organization has a patch policy, and sooner or later an
-auditor asks for proof that it is being followed. This program is that proof:
-it reads the patch inventory, gives every host a status, and reports how much
-of the network is inside the policy.
+This program reads the patch inventory, gives every host a status against the
+patch policy, and reports how much of the network is inside that policy.
 
 THE POLICY
    Criticality 3 (domain controllers, databases)   patch within 14 days
