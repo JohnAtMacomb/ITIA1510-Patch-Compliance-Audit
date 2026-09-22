@@ -4,7 +4,7 @@ Individual assignment. Topic: **lists**, from Week 05, and everything before
 them.
 
 Your program reads the patch inventory, gives every host a status against the
-patch policy, and reports how much of the network is inside that policy. Open `patch_audit.py` and work through the 20 numbered TODOs in
+patch policy, and reports how much of the network is inside that policy. Open `patch_audit.py` and work through the 15 numbered TODOs in
 order. Two of the functions are finished and wrong, and fixing them is part of
 the job. No dictionaries.
 
@@ -80,12 +80,16 @@ With the data in `patch_audit.py`, a finished program gives these answers.
 | Compliance rate                           | 44.4%                              |
 | Audit verdict                             | FAIL                               |
 | Average days since patch                  | 52.3                               |
-| Most overdue host                         | db-01, 81 days past its limit      |
 | Escalation queue, today                   | db-01, dc-02, hr-laptop-07         |
 | Escalation queue, tomorrow                | file-01, web-02                    |
 
-Entering `10` at the forecast prompt lists `dc-01`, `mail-01` and `kiosk-03`,
-and reports that 3 compliant hosts will lapse before the audit.
+The tests in `test_patch_audit.py` cover TODO 1 through TODO 9. Run them from
+this folder:
 
-Four unknown host names in a row at the lookup prompt produce three prompts,
-not four.
+```
+python -m unittest test_patch_audit -v
+```
+
+24 of the 34 fail before you start, and all 34 pass when those nine functions
+are right. The report TODOs, 10 through 15, are checked against the table
+above.
