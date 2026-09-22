@@ -172,104 +172,107 @@ def average_days(days, statuses):
 # The report
 # ---------------------------------------------------------------------------
 
-statuses = build_statuses(HOSTS, DAYS_SINCE_PATCH, CRITICALITY, EXEMPT)
+# The report runs only when this file is run directly, so the test file can
+# import the functions above without the report printing or asking for input.
+if __name__ == "__main__":
+    statuses = build_statuses(HOSTS, DAYS_SINCE_PATCH, CRITICALITY, EXEMPT)
 
-print("=" * 66)
-print("PATCH COMPLIANCE AUDIT")
-print("=" * 66)
-print("Hosts in the inventory:   " + str(len(HOSTS)))
-print("Hosts that are audited:   " + str(len(remove_exempt(HOSTS, EXEMPT))))
+    print("=" * 66)
+    print("PATCH COMPLIANCE AUDIT")
+    print("=" * 66)
+    print("Hosts in the inventory:   " + str(len(HOSTS)))
+    print("Hosts that are audited:   " + str(len(remove_exempt(HOSTS, EXEMPT))))
 
-print()
-print("-" * 66)
-print("HOST".ljust(18) + "CRIT".ljust(6) + "DAYS".ljust(7) + "STATUS".ljust(11) + "OVERDUE")
-print("-" * 66)
-# TODO 13
-#   Print one line for every host, lined up under the headings above, using
-#   the same .ljust() widths the heading line uses. Numbers need str() first.
-#   The last column is the overdue_bar for the host. Print a bar only when the
-#   status is OVERDUE or CRITICAL. An exempt host is 340 days past its limit
-#   and still gets no bar.
+    print()
+    print("-" * 66)
+    print("HOST".ljust(18) + "CRIT".ljust(6) + "DAYS".ljust(7) + "STATUS".ljust(11) + "OVERDUE")
+    print("-" * 66)
+    # TODO 13
+    #   Print one line for every host, lined up under the headings above, using
+    #   the same .ljust() widths the heading line uses. Numbers need str() first.
+    #   The last column is the overdue_bar for the host. Print a bar only when the
+    #   status is OVERDUE or CRITICAL. An exempt host is 340 days past its limit
+    #   and still gets no bar.
 
-print()
-print("-" * 66)
-print("SUMMARY")
-print("-" * 66)
-# TODO 14
-#   Walk STATUS_ORDER and print each status with its count from count_status,
-#   so the summary always prints in the same order and a status nobody has
-#   still shows 0. Use .ljust(12) on the status.
+    print()
+    print("-" * 66)
+    print("SUMMARY")
+    print("-" * 66)
+    # TODO 14
+    #   Walk STATUS_ORDER and print each status with its count from count_status,
+    #   so the summary always prints in the same order and a status nobody has
+    #   still shows 0. Use .ljust(12) on the status.
 
-# TODO 15
-#   The compliance rate is the COMPLIANT hosts as a percentage of the hosts
-#   that can be judged: every host that is not EXEMPT and not INVALID.
-#   Round it to 1 decimal place. If no host can be judged, the rate is 0.0,
-#   and the program must not crash on the division.
-rate = 0.0
+    # TODO 15
+    #   The compliance rate is the COMPLIANT hosts as a percentage of the hosts
+    #   that can be judged: every host that is not EXEMPT and not INVALID.
+    #   Round it to 1 decimal place. If no host can be judged, the rate is 0.0,
+    #   and the program must not crash on the division.
+    rate = 0.0
 
-# TODO 16
-#   The verdict is PASS at a rate of 90 or above, AT RISK at 70 or above, and
-#   FAIL below that. The order the branches are tested in matters.
-verdict = "UNKNOWN"
+    # TODO 16
+    #   The verdict is PASS at a rate of 90 or above, AT RISK at 70 or above, and
+    #   FAIL below that. The order the branches are tested in matters.
+    verdict = "UNKNOWN"
 
-print()
-print("Compliance rate:          " + str(rate) + "%")
-print("Audit verdict:            " + verdict)
-print("Average days since patch: " + str(average_days(DAYS_SINCE_PATCH, statuses)))
+    print()
+    print("Compliance rate:          " + str(rate) + "%")
+    print("Audit verdict:            " + verdict)
+    print("Average days since patch: " + str(average_days(DAYS_SINCE_PATCH, statuses)))
 
-worst = worst_host(HOSTS, DAYS_SINCE_PATCH, CRITICALITY, statuses)
-if worst == -1:
-    print("Most overdue host:        none")
-else:
-    print("Most overdue host:        " + HOSTS[worst] + " ("
-          + str(days_overdue(DAYS_SINCE_PATCH[worst], CRITICALITY[worst]))
-          + " days past its limit)")
+    worst = worst_host(HOSTS, DAYS_SINCE_PATCH, CRITICALITY, statuses)
+    if worst == -1:
+        print("Most overdue host:        none")
+    else:
+        print("Most overdue host:        " + HOSTS[worst] + " ("
+              + str(days_overdue(DAYS_SINCE_PATCH[worst], CRITICALITY[worst]))
+              + " days past its limit)")
 
-print()
-print("-" * 66)
-print("ESCALATION QUEUE")
-print("-" * 66)
-# TODO 17
-#   The patch team takes 3 tickets a day. Build one list: the CRITICAL hosts
-#   in sorted order, followed by the OVERDUE hosts in sorted order.
-#   Print the first 3 under TODAY and whatever is left under TOMORROW, each
-#   host indented 3 spaces. Use slices. Do not write a loop that counts to 3.
-print("TODAY")
-print("TOMORROW")
+    print()
+    print("-" * 66)
+    print("ESCALATION QUEUE")
+    print("-" * 66)
+    # TODO 17
+    #   The patch team takes 3 tickets a day. Build one list: the CRITICAL hosts
+    #   in sorted order, followed by the OVERDUE hosts in sorted order.
+    #   Print the first 3 under TODAY and whatever is left under TOMORROW, each
+    #   host indented 3 spaces. Use slices. Do not write a loop that counts to 3.
+    print("TODAY")
+    print("TOMORROW")
 
-print()
-print("-" * 66)
-print("AUDIT FORECAST")
-print("-" * 66)
-entry = input("Days until the audit: ")
-while entry.isdigit() == False:
-    print("  That is not a whole number.")
+    print()
+    print("-" * 66)
+    print("AUDIT FORECAST")
+    print("-" * 66)
     entry = input("Days until the audit: ")
+    while entry.isdigit() == False:
+        print("  That is not a whole number.")
+        entry = input("Days until the audit: ")
 
-# TODO 18
-#   entry is a string. Convert it, then use will_lapse to find every host that
-#   is COMPLIANT today and will not be on audit day. Print each of those host
-#   names indented 3 spaces, then the line below with the real count in place
-#   of the 0.
-lapsing = 0
+    # TODO 18
+    #   entry is a string. Convert it, then use will_lapse to find every host that
+    #   is COMPLIANT today and will not be on audit day. Print each of those host
+    #   names indented 3 spaces, then the line below with the real count in place
+    #   of the 0.
+    lapsing = 0
 
-print(str(lapsing) + " compliant hosts will lapse before the audit.")
+    print(str(lapsing) + " compliant hosts will lapse before the audit.")
 
-print()
-print("-" * 66)
-print("HOST LOOKUP")
-print("-" * 66)
-print("Enter a host name, or 'done' to finish.")
-# TODO 19
-#   Keep asking with the prompt "Host: " until the user enters done.
-#   For a host in the inventory, find its position with HOSTS.index() and print
-#   its status, its days since patch and its days overdue on one line.
-#   For anything else print "  Not in the inventory."
+    print()
+    print("-" * 66)
+    print("HOST LOOKUP")
+    print("-" * 66)
+    print("Enter a host name, or 'done' to finish.")
+    # TODO 19
+    #   Keep asking with the prompt "Host: " until the user enters done.
+    #   For a host in the inventory, find its position with HOSTS.index() and print
+    #   its status, its days since patch and its days overdue on one line.
+    #   For anything else print "  Not in the inventory."
 
-# TODO 20
-#   Three unknown host names in a row means the analyst is guessing, so the
-#   lookup closes. Count the unknown names in the loop above. On the 3rd one
-#   print "  Too many unknown hosts. Lookup closed." and stop asking.
-#   Run it with 4 bad names and count the prompts.
+    # TODO 20
+    #   Three unknown host names in a row means the analyst is guessing, so the
+    #   lookup closes. Count the unknown names in the loop above. On the 3rd one
+    #   print "  Too many unknown hosts. Lookup closed." and stop asking.
+    #   Run it with 4 bad names and count the prompts.
 
-print("=" * 66)
+    print("=" * 66)
