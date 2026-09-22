@@ -3,10 +3,8 @@
 Individual assignment. Topic: **lists**, from Week 05, and everything before
 them.
 
-Most breaches do not start with a clever attack. They start with a machine that
-missed a patch. Your program reads the patch inventory, gives every host a
-status against the patch policy, and reports how much of the network is inside
-that policy. Open `patch_audit.py` and work through the 20 numbered TODOs in
+Your program reads the patch inventory, gives every host a status against the
+patch policy, and reports how much of the network is inside that policy. Open `patch_audit.py` and work through the 20 numbered TODOs in
 order. Two of the functions are finished and wrong, and fixing them is part of
 the job. No dictionaries.
 
@@ -35,8 +33,7 @@ upload or merge files in the GitHub web interface.
    git checkout -b week06-patch-compliance-audit
    ```
 
-5. Write the code. Commit as you go, so a crashed laptop does not cost you the
-   evening:
+5. Write the code. Commit as you go:
 
    ```
    git add patch_audit.py
