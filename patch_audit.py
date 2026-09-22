@@ -2,9 +2,8 @@
 Week 06 INDIVIDUAL ASSIGNMENT -- Patch Compliance Audit
 ITIA 1510 Cybersecurity Automation
 
-Topic: lists, from Week 05, and everything before them. Input and output,
-if / elif / else, while and for loops, functions that return values, and
-debugging. No dictionaries.
+Topic: lists, from Week 05, and everything before them. if / elif / else,
+for loops, functions that return values, and debugging. No dictionaries.
 
 This program reads the patch inventory, gives every host a status against the
 patch policy, and reports how much of the network is inside that policy.
@@ -21,9 +20,9 @@ THE POLICY
    INVALID     the record cannot be trusted: days below 0, or a criticality
                that is not 1, 2 or 3
 
-The inventory, the section headings and the input checks are already written.
-Work through the 20 numbered TODOs in order. Two of the functions are finished
-and wrong, and fixing them is part of the job.
+The inventory and the section headings are already written. Work through the
+15 numbered TODOs in order. Two of the functions are finished and wrong, and
+fixing them is part of the job.
 
 Run the file before changing anything. It works, but every answer is wrong,
 because every function still returns a placeholder.
@@ -84,29 +83,13 @@ def days_overdue(days, criticality):
     return 0
 
 
-def overdue_bar(overdue):
-    """Return a bar of # characters, one for every 10 full days overdue."""
-    # TODO 5
-    #   81 days overdue is "########". Use // and string replication.
-    #   A host that is overdue at all gets at least one #, so 1 day is "#".
-    #   No bar is longer than 10 characters. 0 days overdue is "".
-    return ""
-
-
-def will_lapse(days, criticality, days_ahead):
-    """True when a host is inside its limit today but will be past it
-    days_ahead days from now, if nobody patches it."""
-    # TODO 6
-    return False
-
-
 # ---------------------------------------------------------------------------
 # The whole inventory
 # ---------------------------------------------------------------------------
 
 def build_statuses(hosts, days, crits, exempt):
     """Return a new list holding the status of every host, in the same order."""
-    # TODO 7
+    # TODO 5
     #   The three lists are parallel, so loop over the POSITIONS with
     #   range(len(hosts)) and use the position to reach into all three.
     #   Append each status to a new list and return the list.
@@ -116,32 +99,21 @@ def build_statuses(hosts, days, crits, exempt):
 
 def count_status(statuses, wanted):
     """Return how many entries in statuses equal wanted."""
-    # TODO 8
+    # TODO 6
     #   Write the loop and the counter. Do not use the .count() method.
     return 0
 
 
 def hosts_with_status(hosts, statuses, wanted):
     """Return a list of the host names whose status equals wanted."""
-    # TODO 9
+    # TODO 7
+    #   hosts and statuses are parallel lists, the same way the inventory is.
     return []
-
-
-def worst_host(hosts, days, crits, statuses):
-    """Return the POSITION of the host that is the most days overdue, looking
-    only at hosts whose status is OVERDUE or CRITICAL. Return -1 when no host
-    has either status."""
-    # TODO 10
-    #   Keep a best-so-far position and a best-so-far number of days overdue,
-    #   and update both whenever a host beats them.
-    #   The most days since patch and the most days OVERDUE are not the same
-    #   host in this inventory. The policy is why.
-    return -1
 
 
 def remove_exempt(hosts, exempt):
     """Return a copy of hosts with every exempt host taken out."""
-    # TODO 11 -- DEBUG
+    # TODO 8 -- DEBUG
     #   This function is finished and it is wrong. The inventory holds 13
     #   hosts and 2 are exempt, so it should return 11. It returns 12.
     #   Set a breakpoint, step through the loop and watch remaining and host.
@@ -156,11 +128,11 @@ def remove_exempt(hosts, exempt):
 def average_days(days, statuses):
     """Return the average days since patch, leaving out EXEMPT and INVALID
     hosts, rounded to 1 decimal place."""
-    # TODO 12 -- DEBUG
+    # TODO 9 -- DEBUG
     #   This function is finished and it is wrong in TWO places. The right
     #   answer for this inventory is 52.3. Work the average out by hand for
     #   the first three hosts, then step through and find where the function
-    #   disagrees with you. It cannot be tested until TODO 7 is done.
+    #   disagrees with you. It cannot be tested until TODO 5 is done.
     total = 0
     for i in range(1, len(statuses)):
         if statuses[i] != "EXEMPT" and statuses[i] != "INVALID":
@@ -173,7 +145,7 @@ def average_days(days, statuses):
 # ---------------------------------------------------------------------------
 
 # The report runs only when this file is run directly, so the test file can
-# import the functions above without the report printing or asking for input.
+# import the functions above without the report printing.
 if __name__ == "__main__":
     statuses = build_statuses(HOSTS, DAYS_SINCE_PATCH, CRITICALITY, EXEMPT)
 
@@ -187,32 +159,29 @@ if __name__ == "__main__":
     print("-" * 66)
     print("HOST".ljust(18) + "CRIT".ljust(6) + "DAYS".ljust(7) + "STATUS".ljust(11) + "OVERDUE")
     print("-" * 66)
-    # TODO 13
+    # TODO 10
     #   Print one line for every host, lined up under the headings above, using
-    #   the same .ljust() widths the heading line uses. Numbers need str() first.
-    #   The last column is the overdue_bar for the host. Print a bar only when the
-    #   status is OVERDUE or CRITICAL. An exempt host is 340 days past its limit
-    #   and still gets no bar.
+    #   the same .ljust() widths the heading line uses. Numbers need str()
+    #   first. The last column is days_overdue for that host.
 
     print()
     print("-" * 66)
     print("SUMMARY")
     print("-" * 66)
-    # TODO 14
-    #   Walk STATUS_ORDER and print each status with its count from count_status,
-    #   so the summary always prints in the same order and a status nobody has
-    #   still shows 0. Use .ljust(12) on the status.
+    # TODO 11
+    #   Walk STATUS_ORDER and print each status with its count from
+    #   count_status, so the summary always prints in the same order and a
+    #   status nobody has still shows 0. Use .ljust(12) on the status.
 
-    # TODO 15
+    # TODO 12
     #   The compliance rate is the COMPLIANT hosts as a percentage of the hosts
     #   that can be judged: every host that is not EXEMPT and not INVALID.
-    #   Round it to 1 decimal place. If no host can be judged, the rate is 0.0,
-    #   and the program must not crash on the division.
+    #   Round it to 1 decimal place.
     rate = 0.0
 
-    # TODO 16
-    #   The verdict is PASS at a rate of 90 or above, AT RISK at 70 or above, and
-    #   FAIL below that. The order the branches are tested in matters.
+    # TODO 13
+    #   The verdict is PASS at a rate of 90 or above, AT RISK at 70 or above,
+    #   and FAIL below that. The order the branches are tested in matters.
     verdict = "UNKNOWN"
 
     print()
@@ -220,59 +189,21 @@ if __name__ == "__main__":
     print("Audit verdict:            " + verdict)
     print("Average days since patch: " + str(average_days(DAYS_SINCE_PATCH, statuses)))
 
-    worst = worst_host(HOSTS, DAYS_SINCE_PATCH, CRITICALITY, statuses)
-    if worst == -1:
-        print("Most overdue host:        none")
-    else:
-        print("Most overdue host:        " + HOSTS[worst] + " ("
-              + str(days_overdue(DAYS_SINCE_PATCH[worst], CRITICALITY[worst]))
-              + " days past its limit)")
-
     print()
     print("-" * 66)
     print("ESCALATION QUEUE")
     print("-" * 66)
-    # TODO 17
-    #   The patch team takes 3 tickets a day. Build one list: the CRITICAL hosts
-    #   in sorted order, followed by the OVERDUE hosts in sorted order.
-    #   Print the first 3 under TODAY and whatever is left under TOMORROW, each
-    #   host indented 3 spaces. Use slices. Do not write a loop that counts to 3.
+    # TODO 14
+    #   Build one list named queue: the CRITICAL hosts in sorted order,
+    #   followed by the OVERDUE hosts in sorted order. Use hosts_with_status
+    #   and sorted(), and join the two lists with +.
+    queue = []
+
+    # TODO 15
+    #   The patch team takes 3 tickets a day. Print the first 3 hosts in queue
+    #   under TODAY and whatever is left under TOMORROW, each host indented
+    #   3 spaces. Use slices. Do not write a loop that counts to 3.
     print("TODAY")
     print("TOMORROW")
-
-    print()
-    print("-" * 66)
-    print("AUDIT FORECAST")
-    print("-" * 66)
-    entry = input("Days until the audit: ")
-    while entry.isdigit() == False:
-        print("  That is not a whole number.")
-        entry = input("Days until the audit: ")
-
-    # TODO 18
-    #   entry is a string. Convert it, then use will_lapse to find every host that
-    #   is COMPLIANT today and will not be on audit day. Print each of those host
-    #   names indented 3 spaces, then the line below with the real count in place
-    #   of the 0.
-    lapsing = 0
-
-    print(str(lapsing) + " compliant hosts will lapse before the audit.")
-
-    print()
-    print("-" * 66)
-    print("HOST LOOKUP")
-    print("-" * 66)
-    print("Enter a host name, or 'done' to finish.")
-    # TODO 19
-    #   Keep asking with the prompt "Host: " until the user enters done.
-    #   For a host in the inventory, find its position with HOSTS.index() and print
-    #   its status, its days since patch and its days overdue on one line.
-    #   For anything else print "  Not in the inventory."
-
-    # TODO 20
-    #   Three unknown host names in a row means the analyst is guessing, so the
-    #   lookup closes. Count the unknown names in the loop above. On the 3rd one
-    #   print "  Too many unknown hosts. Lookup closed." and stop asking.
-    #   Run it with 4 bad names and count the prompts.
 
     print("=" * 66)
