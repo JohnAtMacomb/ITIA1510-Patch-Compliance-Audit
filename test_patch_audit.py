@@ -8,17 +8,15 @@ Run it from the folder that holds patch_audit.py:
 
     python -m unittest test_patch_audit -v
 
-Run it before you change anything: 24 of the 34 tests fail.
-The rest pass by accident, because a placeholder happens to return the right
-answer for that one case, so a green test is only worth something once you
-have written the function. Work through the TODOs and the rest turn green a
-few at a time.
+Some tests pass before you start, because a placeholder happens to return the
+right answer for that one case. A green test is only worth something once you
+have written the function.
 
 Every test has a comment above it saying what it checks. When one fails, read
-that comment first: it names the rule the function broke.
+that comment first.
 
-The report TODOs, 10 through 15, are not tested here. Check those against
-the table in the assignment.
+The report TODOs, 8 through 10, are not tested here. Check those against the
+table in the assignment.
 """
 
 import unittest
@@ -31,222 +29,130 @@ except ModuleNotFoundError:
 
 
 class TestPatchLimit(unittest.TestCase):
-    """TODO 1: patch_limit turns a criticality into the days the policy allows."""
+    """TODO 1: patch_limit."""
 
     # Criticality 3 is the domain controllers and databases: 14 days.
-    def test_criticality_3_gets_14_days(self):
+    def test_criticality_3_gets_14_days(self) -> None:
         self.assertEqual(pa.patch_limit(3), 14)
 
     # Criticality 2 is the servers: 30 days.
-    def test_criticality_2_gets_30_days(self):
+    def test_criticality_2_gets_30_days(self) -> None:
         self.assertEqual(pa.patch_limit(2), 30)
 
-    # Criticality 1 is the workstations, kiosks and printers: 60 days.
-    def test_criticality_1_gets_60_days(self):
+    # Criticality 1 is the workstations and kiosks: 60 days.
+    def test_criticality_1_gets_60_days(self) -> None:
         self.assertEqual(pa.patch_limit(1), 60)
 
 
-class TestIsValidRecord(unittest.TestCase):
-    """TODO 2: is_valid_record says whether a record can be judged at all."""
-
-    # An ordinary record: 9 days on a criticality 3 host.
-    def test_normal_record_is_valid(self):
-        self.assertTrue(pa.is_valid_record(9, 3))
-
-    # 0 days means the host was patched today. Zero is a real number of days,
-    # not a missing one, so the record is valid.
-    def test_zero_days_is_valid(self):
-        self.assertTrue(pa.is_valid_record(0, 1))
-
-    # A host cannot have been patched a negative number of days ago.
-    def test_negative_days_is_invalid(self):
-        self.assertFalse(pa.is_valid_record(-1, 1))
-
-    # Criticality has to be 1, 2 or 3. There is no level 0.
-    def test_criticality_0_is_invalid(self):
-        self.assertFalse(pa.is_valid_record(20, 0))
-
-    # Both fields wrong is still one answer, not two.
-    def test_negative_days_with_bad_criticality_is_invalid(self):
-        self.assertFalse(pa.is_valid_record(-5, 9))
-
-
 class TestPatchStatus(unittest.TestCase):
-    """TODO 3: patch_status gives one host its COMPLIANT, OVERDUE, CRITICAL,
-    EXEMPT or INVALID verdict."""
+    """TODO 2: patch_status."""
 
     # 9 days against a 14 day limit is inside the policy.
-    def test_inside_the_limit_is_compliant(self):
+    def test_inside_the_limit_is_compliant(self) -> None:
         self.assertEqual(pa.patch_status("dc-01", 9, 3, []), "COMPLIANT")
 
-    # 30 days against a 30 day limit is still compliant. The limit is the last
-    # day that counts as inside it.
-    def test_exactly_on_the_limit_is_compliant(self):
+    # Exactly on the limit still counts as compliant.
+    def test_exactly_on_the_limit_is_compliant(self) -> None:
         self.assertEqual(pa.patch_status("mail-01", 30, 2, []), "COMPLIANT")
 
-    # 61 days against a 60 day limit is the first overdue day.
-    def test_one_day_past_the_limit_is_overdue(self):
+    # One day past a 60 day limit.
+    def test_one_day_past_the_limit_is_overdue(self) -> None:
         self.assertEqual(pa.patch_status("file-01", 61, 1, []), "OVERDUE")
 
-    # 60 days against a 30 day limit is exactly twice the limit, which is the
-    # last day of OVERDUE. CRITICAL starts after it.
-    def test_exactly_twice_the_limit_is_overdue(self):
+    # Exactly twice the limit is still OVERDUE, not CRITICAL.
+    def test_exactly_twice_the_limit_is_overdue(self) -> None:
         self.assertEqual(pa.patch_status("web-02", 60, 2, []), "OVERDUE")
 
-    # 95 days against a 14 day limit is well past twice the limit.
-    def test_past_twice_the_limit_is_critical(self):
+    # 95 days is more than twice a 14 day limit.
+    def test_past_twice_the_limit_is_critical(self) -> None:
         self.assertEqual(pa.patch_status("db-01", 95, 3, []), "CRITICAL")
 
-    # A record that cannot be trusted is INVALID, whatever its days say.
-    def test_bad_criticality_is_invalid(self):
-        self.assertEqual(pa.patch_status("vpn-01", 20, 0, []), "INVALID")
+    # A host on the exception list is EXEMPT, even with terrible numbers.
+    # Check EXEMPT before anything else.
+    def test_exempt_beats_critical(self) -> None:
+        self.assertEqual(pa.patch_status("lab-sandbox-01", 400, 1, ["lab-sandbox-01"]), "EXEMPT")
 
-    # Same for a negative day count.
-    def test_negative_days_is_invalid(self):
-        self.assertEqual(pa.patch_status("print-01", -1, 1, []), "INVALID")
-
-    # lab-sandbox-02 is on the exception list and its record is broken. The
-    # exception list is checked first, so the answer is EXEMPT, not INVALID.
-    def test_exemption_beats_a_broken_record(self):
-        self.assertEqual(
-            pa.patch_status("lab-sandbox-02", -1, 1, ["lab-sandbox-02"]), "EXEMPT")
-
-    # 400 days past a 60 day limit, and the signed exception still wins.
-    def test_exemption_beats_being_overdue(self):
-        self.assertEqual(
-            pa.patch_status("lab-sandbox-01", 400, 1, ["lab-sandbox-01"]), "EXEMPT")
+    # An exempt host with good numbers is still EXEMPT, not COMPLIANT.
+    def test_exempt_beats_compliant(self) -> None:
+        self.assertEqual(pa.patch_status("lab-sandbox-02", 5, 1, ["lab-sandbox-02"]), "EXEMPT")
 
 
 class TestDaysOverdue(unittest.TestCase):
-    """TODO 4: days_overdue is how far past its own limit a host is."""
+    """TODO 3: days_overdue."""
 
-    # 95 days against a 14 day limit is 81 days past it.
-    def test_overdue_host(self):
+    # 95 days against a 14 day limit is 81 days late.
+    def test_overdue_host(self) -> None:
         self.assertEqual(pa.days_overdue(95, 3), 81)
 
-    # A host inside its limit is 0 days overdue. Subtracting gives a negative
-    # number here, and a negative number is not an amount of overdue.
-    def test_compliant_host_is_zero_not_negative(self):
+    # A host inside its limit is 0 days late, never a negative number.
+    def test_on_time_host_is_zero(self) -> None:
         self.assertEqual(pa.days_overdue(9, 3), 0)
 
-    # Sitting exactly on the limit is also 0.
-    def test_exactly_on_the_limit_is_zero(self):
-        self.assertEqual(pa.days_overdue(60, 1), 0)
+    # Exactly on the limit is 0 days late.
+    def test_exactly_on_the_limit_is_zero(self) -> None:
+        self.assertEqual(pa.days_overdue(30, 2), 0)
 
 
 class TestBuildStatuses(unittest.TestCase):
-    """TODO 5: build_statuses runs patch_status across the three lists."""
+    """TODO 4: build_statuses."""
 
-    # One status per host, so the positions still line up with HOSTS.
-    def test_one_status_per_host(self):
-        statuses = pa.build_statuses(
-            pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
-        self.assertEqual(len(statuses), len(pa.HOSTS))
+    # One status for every host.
+    def test_one_status_per_host(self) -> None:
+        statuses = pa.build_statuses(pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
+        self.assertEqual(len(statuses), 11)
 
-    # The whole inventory in order. This one test covers every verdict the
-    # program can produce, so it is the first to read when it fails.
-    def test_the_whole_inventory(self):
-        statuses = pa.build_statuses(
-            pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
-        self.assertEqual(statuses, [
-            "COMPLIANT", "CRITICAL", "COMPLIANT", "OVERDUE", "CRITICAL",
-            "COMPLIANT", "OVERDUE", "CRITICAL", "COMPLIANT", "EXEMPT",
-            "EXEMPT", "INVALID", "INVALID",
-        ])
+    # The statuses stay in the same order as the hosts.
+    def test_statuses_keep_their_order(self) -> None:
+        statuses = pa.build_statuses(pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
+        self.assertEqual(statuses[:3], ["COMPLIANT", "CRITICAL", "COMPLIANT"])
+
+    # The last host is on the exception list.
+    def test_last_host_is_exempt(self) -> None:
+        statuses = pa.build_statuses(pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
+        self.assertEqual(statuses[-1], "EXEMPT")
 
 
 class TestCountStatus(unittest.TestCase):
-    """TODO 6: count_status counts one verdict across the inventory."""
+    """TODO 5: count_status."""
 
-    def setUp(self):
-        self.statuses = pa.build_statuses(
-            pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
+    # Two of the three are OVERDUE.
+    def test_counts_matches(self) -> None:
+        self.assertEqual(pa.count_status(["OVERDUE", "COMPLIANT", "OVERDUE"], "OVERDUE"), 2)
 
-    # The five counts have to add back up to the 13 hosts in the inventory.
-    def test_counts(self):
-        self.assertEqual(pa.count_status(self.statuses, "COMPLIANT"), 4)
-        self.assertEqual(pa.count_status(self.statuses, "OVERDUE"), 2)
-        self.assertEqual(pa.count_status(self.statuses, "CRITICAL"), 3)
-        self.assertEqual(pa.count_status(self.statuses, "EXEMPT"), 2)
-        self.assertEqual(pa.count_status(self.statuses, "INVALID"), 2)
-
-    # A status nobody has is 0. The summary prints every status in
-    # STATUS_ORDER, so this has to be a number and not an error.
-    def test_a_status_nobody_has_counts_zero(self):
-        self.assertEqual(pa.count_status(self.statuses, "PENDING"), 0)
+    # No match gives 0.
+    def test_no_match_is_zero(self) -> None:
+        self.assertEqual(pa.count_status(["COMPLIANT"], "CRITICAL"), 0)
 
 
 class TestHostsWithStatus(unittest.TestCase):
-    """TODO 7: hosts_with_status names the hosts behind a count."""
+    """TODO 6: hosts_with_status."""
 
-    def setUp(self):
-        self.statuses = pa.build_statuses(
-            pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
+    # Only the hosts whose status matches, in their original order.
+    def test_matching_hosts(self) -> None:
+        self.assertEqual(pa.hosts_with_status(["a", "b", "c"], ["CRITICAL", "COMPLIANT", "CRITICAL"], "CRITICAL"),
+                         ["a", "c"])
 
-    # The names come back in inventory order, not sorted and not reversed.
-    def test_critical_hosts_in_inventory_order(self):
-        self.assertEqual(
-            pa.hosts_with_status(pa.HOSTS, self.statuses, "CRITICAL"),
-            ["dc-02", "db-01", "hr-laptop-07"])
-
-    # The same for OVERDUE, which is the other half of the escalation queue.
-    def test_overdue_hosts_in_inventory_order(self):
-        self.assertEqual(
-            pa.hosts_with_status(pa.HOSTS, self.statuses, "OVERDUE"),
-            ["web-02", "file-01"])
-
-    # A status nobody has gives an empty list, not None.
-    def test_a_status_nobody_has_gives_an_empty_list(self):
-        self.assertEqual(pa.hosts_with_status(pa.HOSTS, self.statuses, "PENDING"), [])
-
-
-class TestRemoveExempt(unittest.TestCase):
-    """TODO 8, the first defect: remove_exempt drops the exempt hosts."""
-
-    # 13 hosts, 2 of them exempt, so 11 are audited.
-    def test_both_exempt_hosts_are_removed(self):
-        self.assertEqual(len(pa.remove_exempt(pa.HOSTS, pa.EXEMPT)), 11)
-
-    # Neither sandbox survives the filter.
-    def test_neither_sandbox_survives(self):
-        remaining = pa.remove_exempt(pa.HOSTS, pa.EXEMPT)
-        self.assertNotIn("lab-sandbox-01", remaining)
-        self.assertNotIn("lab-sandbox-02", remaining)
-
-    # Two exempt hosts side by side. Removing from a list while looping over it
-    # shifts everything left, so the second one gets skipped. This is the
-    # defect, and the debugger shows it in one pass.
-    def test_adjacent_exempt_hosts_are_both_removed(self):
-        self.assertEqual(pa.remove_exempt(["a", "x", "y", "b"], ["x", "y"]), ["a", "b"])
-
-    # The function works on a copy. HOSTS is used again after this call, so
-    # emptying it here would break the rest of the report.
-    def test_the_original_list_is_not_changed(self):
-        before = list(pa.HOSTS)
-        pa.remove_exempt(pa.HOSTS, pa.EXEMPT)
-        self.assertEqual(pa.HOSTS, before)
+    # No match gives an empty list.
+    def test_no_match(self) -> None:
+        self.assertEqual(pa.hosts_with_status(["a"], ["COMPLIANT"], "CRITICAL"), [])
 
 
 class TestAverageDays(unittest.TestCase):
-    """TODO 9, the second defect: average_days averages the judged hosts."""
+    """TODO 7: average_days, the function that is finished and wrong."""
 
-    # The average of the 11 hosts that can be judged, to one decimal place.
-    def test_average_of_the_judged_hosts(self):
-        statuses = pa.build_statuses(
-            pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
-        self.assertEqual(pa.average_days(pa.DAYS_SINCE_PATCH, statuses), 52.3)
-
-    # Two hosts, both counted: (10 + 20) / 2. Starting the loop at 1 skips the
-    # first host, which is half of the defect.
-    def test_the_first_host_is_counted(self):
+    # Two hosts, both counted: (10 + 20) / 2 = 15.0. A loop that starts at 1
+    # skips the first host.
+    def test_the_first_host_is_counted(self) -> None:
         self.assertEqual(pa.average_days([10, 20], ["COMPLIANT", "COMPLIANT"]), 15.0)
 
-    # EXEMPT and INVALID hosts are left out of the total and out of the count.
-    # Dividing by the length of the whole list is the other half of the defect.
-    def test_exempt_and_invalid_are_left_out_of_both_halves(self):
-        self.assertEqual(
-            pa.average_days([10, 20, 999, 999], ["COMPLIANT", "COMPLIANT", "EXEMPT", "INVALID"]),
-            15.0)
+    # EXEMPT hosts are left out: (10 + 20) / 2 = 15.0, not (10 + 20 + 999) / 3.
+    def test_exempt_is_left_out(self) -> None:
+        self.assertEqual(pa.average_days([10, 20, 999], ["COMPLIANT", "OVERDUE", "EXEMPT"]), 15.0)
+
+    # The whole inventory: 471 days over 9 audited hosts.
+    def test_whole_inventory(self) -> None:
+        statuses = pa.build_statuses(pa.HOSTS, pa.DAYS_SINCE_PATCH, pa.CRITICALITY, pa.EXEMPT)
+        self.assertEqual(pa.average_days(pa.DAYS_SINCE_PATCH, statuses), 52.3)
 
 
 if __name__ == "__main__":
