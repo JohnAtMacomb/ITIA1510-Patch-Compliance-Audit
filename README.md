@@ -1,12 +1,30 @@
 # ITIA 1510 Week 06: Patch Compliance Audit
 
 Individual assignment. Topic: **lists**, from Week 05, and everything before
-them.
+them. No dictionaries.
 
-Your program reads the patch inventory, gives every host a status against the
-patch policy, and reports how much of the network is inside that policy. Open `patch_audit.py` and work through the 15 numbered TODOs in
-order. Two of the functions are finished and wrong, and fixing them is part of
-the job. No dictionaries.
+Every server and computer needs its security patches. Your program checks how
+long each one has gone without a patch, gives it a status, and reports how
+much of the network follows the patch policy.
+
+Open `patch_audit.py` and work through the 10 numbered TODOs in order. Each
+one is a few lines. One function is finished and wrong, and fixing it is part
+of the job.
+
+Every function has type hints, such as `list[str]` and `-> int`. They need
+Python 3.9 or newer. Check with `python --version`.
+
+## The policy
+
+| Criticality | Hosts                          | Patch within |
+|-------------|--------------------------------|--------------|
+| 3           | domain controllers, databases  | 14 days      |
+| 2           | servers                        | 30 days      |
+| 1           | workstations, kiosks           | 60 days      |
+
+A host is **COMPLIANT** at its limit or less, **OVERDUE** past the limit but
+no more than twice it, and **CRITICAL** beyond that. A host on the exception
+list is **EXEMPT**, whatever its numbers say.
 
 ## Get your own copy
 
@@ -69,27 +87,22 @@ then commit, push, merge and submit it for partial credit.
 
 With the data in `patch_audit.py`, a finished program gives these answers.
 
-| Question                                  | Answer                             |
-|-------------------------------------------|------------------------------------|
-| Hosts that are audited                    | 11                                 |
-| Compliant                                 | 4                                  |
-| Overdue                                   | 2                                  |
-| Critical                                  | 3                                  |
-| Exempt                                    | 2                                  |
-| Invalid                                   | 2                                  |
-| Compliance rate                           | 44.4%                              |
-| Audit verdict                             | FAIL                               |
-| Average days since patch                  | 52.3                               |
-| Escalation queue, today                   | db-01, dc-02, hr-laptop-07         |
-| Escalation queue, tomorrow                | file-01, web-02                    |
+| Question                     | Answer                                        |
+|------------------------------|-----------------------------------------------|
+| Hosts that are audited       | 9                                             |
+| Compliant, overdue, critical | 4, 2, 3                                       |
+| Exempt                       | 2                                             |
+| Compliance rate              | 44.4%                                         |
+| Audit verdict                | FAIL                                          |
+| Average days since patch     | 52.3                                          |
+| Escalation queue             | db-01, dc-02, hr-laptop-07, file-01, web-02   |
 
-The tests in `test_patch_audit.py` cover TODO 1 through TODO 9. Run them from
+The tests in `test_patch_audit.py` cover TODO 1 through TODO 7. Run them from
 this folder:
 
 ```
 python -m unittest test_patch_audit -v
 ```
 
-24 of the 34 fail before you start, and all 34 pass when those nine functions
-are right. The report TODOs, 10 through 15, are checked against the table
-above.
+19 of the 23 fail before you start, and all 23 pass when those functions are
+right. The report TODOs, 8 through 10, are checked against the table above.
